@@ -229,7 +229,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
               name="dueDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Due Date</FormLabel>
+                  <FormLabel>Due Date (Central Time)</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>

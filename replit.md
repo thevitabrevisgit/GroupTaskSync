@@ -20,6 +20,10 @@ Preferred communication style: Simple, everyday language.
 ✓ Enhanced mobile camera integration with native capture support
 ✓ Added PWA features for mobile app-like experience
 ✓ Implemented mobile-friendly UI with safe area support
+✓ Fixed manage profiles button functionality with modal popup
+✓ Improved profile persistence to prevent logout on refresh/swipe
+✓ Standardized all date handling to Central Standard Time (CST)
+✓ Restored dark theme backgrounds and color-coded task borders
 
 ## System Architecture
 

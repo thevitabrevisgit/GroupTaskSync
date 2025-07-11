@@ -168,7 +168,12 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                   <span>
                     Due:{" "}
                     <span className="font-medium">
-                      {new Date(task.dueDate).toLocaleDateString()}
+                      {new Date(task.dueDate + 'T00:00:00-06:00').toLocaleDateString('en-US', { 
+                        timeZone: 'America/Chicago',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })} (CST)
                     </span>
                   </span>
                 )}

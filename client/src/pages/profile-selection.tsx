@@ -10,6 +10,7 @@ export default function ProfileSelection() {
   const [, setLocation] = useLocation();
   const [showPinModal, setShowPinModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [showManageProfiles, setShowManageProfiles] = useState(false);
   const { setCurrentUser } = useCurrentUser();
 
   const { data: users = [], isLoading } = useQuery({
@@ -78,11 +79,35 @@ export default function ProfileSelection() {
         </div>
         
         <div className="text-center">
-          <Button variant="ghost" className="text-gray-400 hover:text-white transition-colors duration-200 text-lg">
+          <Button 
+            variant="ghost" 
+            className="text-gray-400 hover:text-white transition-colors duration-200 text-lg"
+            onClick={() => setShowManageProfiles(true)}
+          >
             <Crown className="mr-2 w-5 h-5" />
             Manage Profiles
           </Button>
         </div>
+
+        {/* Manage Profiles Modal */}
+        {showManageProfiles && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h2 className="text-xl font-bold mb-4">Manage Profiles</h2>
+              <p className="text-gray-600 mb-4">
+                Profile management features will be available in a future update. Currently, all 6 team member profiles are pre-configured.
+              </p>
+              <div className="flex justify-end">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowManageProfiles(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <AdminPinModal

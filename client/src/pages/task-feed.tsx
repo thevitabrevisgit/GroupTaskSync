@@ -25,12 +25,16 @@ export default function TaskFeed() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Redirect to profile selection if no user is selected
+  // Redirect to profile selection if no user is selected, but only after loading
   useEffect(() => {
-    if (!currentUser) {
-      setLocation("/");
+    if (!currentUser && !currentUserId) {
+      // Only redirect if we're sure there's no stored user
+      const storedUserId = localStorage.getItem("currentUserId");
+      if (!storedUserId) {
+        setLocation("/");
+      }
     }
-  }, [currentUser, setLocation]);
+  }, [currentUser, currentUserId, setLocation]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery({
     queryKey: ["/api/tasks", activeFilter, currentUserId],
