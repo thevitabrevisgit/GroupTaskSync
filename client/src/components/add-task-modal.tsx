@@ -255,10 +255,11 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
                           return (
                             <FormItem
                               key={tag}
-                              className="flex flex-row items-start space-x-3 space-y-0"
+                              className="flex flex-row items-center space-x-2 space-y-0"
                             >
                               <FormControl>
                                 <Checkbox
+                                  className="h-4 w-4"
                                   checked={field.value?.includes(tag)}
                                   onCheckedChange={(checked) => {
                                     return checked

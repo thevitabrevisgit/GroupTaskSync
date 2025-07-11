@@ -24,6 +24,12 @@
     min-width: 44px;
   }
   
+  /* Keep checkboxes smaller */
+  [role="checkbox"] {
+    min-height: auto !important;
+    min-width: auto !important;
+  }
+  
   /* Better mobile scrolling */
   * {
     -webkit-overflow-scrolling: touch;
@@ -71,76 +77,32 @@ input[type="file"][capture] {
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
+  --background: hsl(20, 14.3%, 4.1%);
+  --foreground: hsl(60, 9.1%, 97.8%);
+  --muted: hsl(12, 6.5%, 15.1%);
+  --muted-foreground: hsl(24, 5.4%, 63.9%);
+  --popover: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(60, 9.1%, 97.8%);
+  --card: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(60, 9.1%, 97.8%);
+  --border: hsl(12, 6.5%, 15.1%);
+  --input: hsl(12, 6.5%, 15.1%);
   --primary: hsl(217, 91%, 60%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(142, 76%, 36%);
   --secondary-foreground: hsl(0, 0%, 100%);
   --accent: hsl(43, 96%, 56%);
   --accent-foreground: hsl(0, 0%, 100%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(35.5, 91.7%, 32.9%);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
-/* Custom classes for the design reference */
-.profile-selection-bg {
-  background: linear-gradient(135deg, hsl(240, 100%, 7%) 0%, hsl(277, 100%, 15%) 50%, hsl(240, 100%, 7%) 100%);
-}
-
-.task-card-overdue {
-  border-color: hsl(0, 84%, 60%);
-}
-
-.task-card-warning {
-  border-color: hsl(43, 96%, 56%);
-}
-
-.task-card-normal {
-  border-color: hsl(142, 76%, 36%);
-}
-
-.task-card-assigned {
-  border-color: hsl(217, 91%, 60%);
-}
-
-.pull-to-refresh {
-  transition: transform 0.3s ease;
-}
-
-.pull-to-refresh.pulling {
-  transform: translateY(40px);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }

@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Image, X } from "lucide-react";
-import { FileUpload } from "@/components/ui/file-upload";
 
 interface MobileCameraProps {
   onImageSelect: (file: File) => void;
@@ -17,10 +16,27 @@ export function MobileCamera({
   className = "" 
 }: MobileCameraProps) {
   const [showOptions, setShowOptions] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (file: File) => {
     onImageSelect(file);
     setShowOptions(false);
+  };
+
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageSelect(file);
+    }
   };
 
   if (imagePreview) {
@@ -49,35 +65,43 @@ export function MobileCamera({
       <div className={`space-y-3 ${className}`}>
         <div className="text-sm font-medium text-gray-700 mb-2">Add Photo</div>
         <div className="grid grid-cols-2 gap-3">
-          <FileUpload 
-            onFileSelect={handleImageSelect}
-            capture="environment"
-            accept="image/*"
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full h-20 flex-col space-y-1"
+            onClick={handleCameraClick}
           >
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full h-20 flex-col space-y-1"
-            >
-              <Camera className="w-6 h-6" />
-              <span className="text-xs">Camera</span>
-            </Button>
-          </FileUpload>
+            <Camera className="w-6 h-6" />
+            <span className="text-xs">Camera</span>
+          </Button>
           
-          <FileUpload 
-            onFileSelect={handleImageSelect}
-            accept="image/*"
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full h-20 flex-col space-y-1"
+            onClick={handleGalleryClick}
           >
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full h-20 flex-col space-y-1"
-            >
-              <Image className="w-6 h-6" />
-              <span className="text-xs">Gallery</span>
-            </Button>
-          </FileUpload>
+            <Image className="w-6 h-6" />
+            <span className="text-xs">Gallery</span>
+          </Button>
         </div>
+        
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         
         <Button 
           type="button" 
