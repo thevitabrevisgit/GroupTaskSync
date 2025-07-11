@@ -2,11 +2,21 @@
 
 ## Overview
 
-TaskShare is a full-stack task management application built with React, Express, and PostgreSQL. It provides a collaborative platform for managing tasks with features like user profiles, task assignment, time tracking, and note-taking. The application uses a modern tech stack with shadcn/ui components for the frontend and Drizzle ORM for database management.
+TaskShare is a full-stack collaborative task management application built for a 6-person team with Netflix-style profile selection and social media feed layout. The application features user profiles, task assignment, time tracking, note-taking, and admin controls. Built with React, Express, and PostgreSQL using modern technologies including shadcn/ui components and Drizzle ORM.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (January 2025)
+
+✓ Implemented Netflix-style profile selection page with 6 team members (Sam, Sean, Gabe, Evelyn, Beth, Tim)
+✓ Added admin PIN verification system (PIN: 0525) for Beth and Tim
+✓ Created social media feed layout with task cards displaying images
+✓ Built task filtering system (All Tasks, My Tasks, Indoor, Outdoor, Chores, Projects)
+✓ Integrated PostgreSQL database with full schema setup
+✓ Added file upload system for task images and user avatars
+✓ Fixed SelectItem error in task creation form
 
 ## System Architecture
 

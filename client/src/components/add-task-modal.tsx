@@ -77,7 +77,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
       formData.append("description", data.description);
       formData.append("createdBy", currentUserId!.toString());
       
-      if (data.assignedTo) {
+      if (data.assignedTo && data.assignedTo !== "unassigned") {
         formData.append("assignedTo", data.assignedTo);
       }
       if (data.dueDate) {
@@ -258,7 +258,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Unassigned</SelectItem>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
                       {users.map((user: any) => (
                         <SelectItem key={user.id} value={user.id.toString()}>
                           {user.name}
