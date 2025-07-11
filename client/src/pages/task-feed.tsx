@@ -65,9 +65,9 @@ export default function TaskFeed() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-safe">
+    <div className="task-feed-bg pb-safe">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 safe-area-inset-top">
+      <header className="bg-gray-800 shadow-sm border-b border-gray-700 sticky top-0 z-40 safe-area-inset-top">
         <div className="px-4 py-3 pt-safe">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -77,8 +77,8 @@ export default function TaskFeed() {
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">TaskShare</h1>
-                <p className="text-sm text-gray-600">{currentUser.name}</p>
+                <h1 className="text-xl font-bold text-white">TaskShare</h1>
+                <p className="text-sm text-gray-300">{currentUser.name}</p>
               </div>
             </div>
             
@@ -100,7 +100,7 @@ export default function TaskFeed() {
       </header>
 
       {/* Filter Section */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-gray-800 border-b border-gray-700 px-4 py-4">
         <div className="flex space-x-2 overflow-x-auto">
           {FILTER_OPTIONS.map((option) => (
             <Button
@@ -170,7 +170,7 @@ export default function TaskFeed() {
 
       {/* Floating Action Button (Admin Only) */}
       {currentUser.isAdmin && (
-        <div className="fixed bottom-6 right-6">
+        <div className="fixed bottom-6 right-6 z-50 pb-safe">
           <Button
             size="lg"
             className="w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
@@ -181,7 +181,6 @@ export default function TaskFeed() {
         </div>
       )}
 
-      {/* Modals */}
       <TaskDetailModal
         taskId={selectedTaskId}
         open={!!selectedTaskId}

@@ -120,16 +120,18 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
     },
   });
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleImageSelect = (file: File) => {
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   const handleClose = () => {
@@ -191,10 +193,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
               <FormLabel>Task Image</FormLabel>
               <MobileCamera
                 onImageSelect={handleImageSelect}
-                onImageRemove={() => {
-                  setSelectedImage(null);
-                  setImagePreview(null);
-                }}
+                onImageRemove={handleImageRemove}
                 imagePreview={imagePreview}
               />
             </div>

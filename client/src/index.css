@@ -107,19 +107,30 @@ body {
   color: hsl(var(--foreground));
 }
 
+/* Dark background for profile selection */
+.profile-selection-bg {
+  background: linear-gradient(135deg, #1e1e2e 0%, #2a2a40 100%);
+}
+
+/* Task feed dark background */
+.task-feed-bg {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  min-height: 100vh;
+}
+
 /* Task card border styles for color-coded due dates */
 .task-card-assigned {
-  border-color: hsl(var(--primary)) !important;
+  border-color: #3b82f6 !important; /* Blue for assigned tasks */
 }
 
 .task-card-overdue {
-  border-color: hsl(var(--destructive)) !important;
+  border-color: #ef4444 !important; /* Red for overdue tasks */
 }
 
 .task-card-warning {
-  border-color: hsl(var(--accent)) !important;
+  border-color: #f59e0b !important; /* Yellow for warning tasks */
 }
 
 .task-card-normal {
-  border-color: hsl(var(--secondary)) !important;
+  border-color: #10b981 !important; /* Green for normal tasks */
 }
