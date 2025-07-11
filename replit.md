@@ -24,6 +24,9 @@ Preferred communication style: Simple, everyday language.
 ✓ Improved profile persistence to prevent logout on refresh/swipe
 ✓ Standardized all date handling to Central Standard Time (CST)
 ✓ Restored dark theme backgrounds and color-coded task borders
+✓ Removed admin-only restrictions - everyone can now create tasks
+✓ Fixed date timezone issues - dates now save and display correctly in CST
+✓ Added consistent color coding for user avatars throughout the app
 
 ## System Architecture
 

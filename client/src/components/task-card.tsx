@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { getUserColor } from "@/lib/utils";
 
 interface TaskCardProps {
   task: any;
@@ -110,11 +111,9 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
         {/* Avatar Badge */}
         {task.assignee && (
           <div className="absolute bottom-2 left-2">
-            <img
-              src={task.assignee.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${task.assignee.name}`}
-              alt={`${task.assignee.name}'s avatar`}
-              className="w-8 h-8 rounded-full border-2 border-white object-cover"
-            />
+            <div className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-xs font-bold ${getUserColor(task.assignee.username).bg} ${getUserColor(task.assignee.username).text}`}>
+              {task.assignee.name.charAt(0)}
+            </div>
           </div>
         )}
       </div>

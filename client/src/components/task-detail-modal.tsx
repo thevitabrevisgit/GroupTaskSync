@@ -15,6 +15,7 @@ import { X, Clock, CheckCircle } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getUserColor } from "@/lib/utils";
 
 interface TaskDetailModalProps {
   taskId: number | null;
@@ -166,12 +167,19 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
               <p className="text-gray-600">{task.description}</p>
               
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>
-                  Assigned to:{" "}
-                  <span className="font-medium">
-                    {task.assignee?.name || "Unassigned"}
-                  </span>
-                </span>
+                <div className="flex items-center gap-2">
+                  <span>Assigned to:</span>
+                  {task.assignee ? (
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getUserColor(task.assignee.username).bg} ${getUserColor(task.assignee.username).text}`}>
+                        {task.assignee.name.charAt(0)}
+                      </div>
+                      <span className="font-medium">{task.assignee.name}</span>
+                    </div>
+                  ) : (
+                    <span className="font-medium">Unassigned</span>
+                  )}
+                </div>
                 {task.dueDate && (
                   <span>
                     Due:{" "}

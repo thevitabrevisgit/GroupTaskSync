@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Crown } from "lucide-react";
 import AdminPinModal from "@/components/admin-pin-modal";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { getUserColor } from "@/lib/utils";
 
 export default function ProfileSelection() {
   const [, setLocation] = useLocation();
@@ -61,11 +62,9 @@ export default function ProfileSelection() {
               onClick={() => handleProfileSelect(user.id, user.isAdmin)}
             >
               <div className="bg-gray-800 rounded-lg p-6 text-center hover:bg-gray-700 transition-all duration-300 group-hover:scale-105 relative">
-                <img
-                  src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`}
-                  alt={`${user.name}'s avatar`}
-                  className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-transparent group-hover:border-primary"
-                />
+                <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold ${getUserColor(user.username).bg} ${getUserColor(user.username).text} ${getUserColor(user.username).border} border-4`}>
+                  {user.name.charAt(0)}
+                </div>
                 <h3 className="text-white font-semibold text-lg">{user.name}</h3>
                 <p className={`text-sm font-medium ${user.isAdmin ? 'text-accent' : 'text-gray-400'}`}>
                   {user.isAdmin ? 'Admin' : 'Member'}

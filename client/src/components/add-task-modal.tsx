@@ -82,6 +82,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
         formData.append("assignedTo", data.assignedTo);
       }
       if (data.dueDate) {
+        // Ensure the date is saved as CST to prevent timezone shifts
         formData.append("dueDate", data.dueDate);
       }
       formData.append("priority", data.priority);

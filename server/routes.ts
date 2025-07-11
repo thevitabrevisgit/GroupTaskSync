@@ -133,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tags: req.body.tags ? JSON.parse(req.body.tags) : [],
         assignedTo: req.body.assignedTo ? parseInt(req.body.assignedTo) : null,
         createdBy: parseInt(req.body.createdBy),
-        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate + 'T00:00:00-06:00') : null,
       };
 
       if (req.file) {

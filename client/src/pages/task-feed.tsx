@@ -172,18 +172,16 @@ export default function TaskFeed() {
         )}
       </main>
 
-      {/* Floating Action Button (Admin Only) */}
-      {currentUser.isAdmin && (
-        <div className="fixed bottom-6 right-6 z-50 pb-safe">
-          <Button
-            size="lg"
-            className="w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
-            onClick={() => setShowAddTask(true)}
-          >
-            <Plus className="w-6 h-6" />
-          </Button>
-        </div>
-      )}
+      {/* Floating Action Button (Available to Everyone) */}
+      <div className="fixed bottom-6 right-6 z-50 pb-safe">
+        <Button
+          size="lg"
+          className="w-14 h-14 rounded-full shadow-lg hover:scale-110 transition-all duration-200"
+          onClick={() => setShowAddTask(true)}
+        >
+          <Plus className="w-6 h-6" />
+        </Button>
+      </div>
 
       <TaskDetailModal
         taskId={selectedTaskId}
