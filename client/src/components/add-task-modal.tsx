@@ -103,7 +103,10 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      // Invalidate all task queries to ensure the feed updates
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === "/api/tasks"
+      });
       toast({ title: "Task created successfully!" });
       handleClose();
     },

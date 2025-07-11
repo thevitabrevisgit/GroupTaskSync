@@ -29,7 +29,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
   const [noteContent, setNoteContent] = useState("");
 
   const { data: task, isLoading } = useQuery({
-    queryKey: ["/api/tasks", taskId],
+    queryKey: [`/api/tasks/${taskId}`],
     enabled: !!taskId,
   });
 
@@ -48,7 +48,8 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", taskId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/tasks/${taskId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       setTimeHours("");
       toast({ title: "Time added successfully" });
     },
@@ -68,7 +69,8 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", taskId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/tasks/${taskId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       setNoteContent("");
       toast({ title: "Note saved successfully" });
     },

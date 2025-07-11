@@ -33,7 +33,20 @@ export default function TaskFeed() {
   }, [currentUser, setLocation]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery({
-    queryKey: ["/api/tasks", { filter: activeFilter, userId: currentUserId }],
+    queryKey: ["/api/tasks", activeFilter, currentUserId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (activeFilter !== "all") {
+        params.set("filter", activeFilter);
+      }
+      if (currentUserId) {
+        params.set("userId", currentUserId.toString());
+      }
+      const url = `/api/tasks${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json();
+    },
     enabled: !!currentUser,
   });
 
