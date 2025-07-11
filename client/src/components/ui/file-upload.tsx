@@ -5,15 +5,17 @@ import { Camera, Upload } from "lucide-react";
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
   accept?: string;
-  capture?: boolean;
+  capture?: boolean | "user" | "environment";
   children?: React.ReactNode;
+  multiple?: boolean;
 }
 
 export function FileUpload({ 
   onFileSelect, 
   accept = "image/*", 
   capture = false,
-  children 
+  children,
+  multiple = false
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,14 +30,22 @@ export function FileUpload({
     fileInputRef.current?.click();
   };
 
+  // Convert capture prop to the correct attribute value
+  const getCaptureValue = () => {
+    if (capture === true || capture === "environment") return "environment";
+    if (capture === "user") return "user";
+    return undefined;
+  };
+
   return (
     <>
       <input
         ref={fileInputRef}
         type="file"
         accept={accept}
-        capture={capture ? "environment" : undefined}
+        capture={getCaptureValue()}
         onChange={handleFileSelect}
+        multiple={multiple}
         className="hidden"
       />
       <div onClick={triggerFileSelect}>

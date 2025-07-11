@@ -17,6 +17,9 @@ Preferred communication style: Simple, everyday language.
 ✓ Integrated PostgreSQL database with full schema setup
 ✓ Added file upload system for task images and user avatars
 ✓ Fixed SelectItem error in task creation form
+✓ Enhanced mobile camera integration with native capture support
+✓ Added PWA features for mobile app-like experience
+✓ Implemented mobile-friendly UI with safe area support
 
 ## System Architecture
 

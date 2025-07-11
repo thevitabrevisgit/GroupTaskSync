@@ -32,6 +32,7 @@ import { Camera, Image } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { MobileCamera } from "@/components/mobile-camera";
 
 const createTaskSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -188,64 +189,14 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
             {/* Task Image */}
             <div>
               <FormLabel>Task Image</FormLabel>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                {imagePreview ? (
-                  <div className="space-y-2">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImagePreview(null);
-                      }}
-                    >
-                      Remove Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Camera className="w-8 h-8 text-gray-400 mx-auto" />
-                    <p className="text-gray-500">Add a photo to this task</p>
-                    <div className="flex space-x-2 justify-center">
-                      <label>
-                        <Button type="button" size="sm" asChild>
-                          <span>
-                            <Camera className="w-4 h-4 mr-1" />
-                            Camera
-                          </span>
-                        </Button>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          capture="environment"
-                          onChange={handleImageSelect}
-                          className="hidden"
-                        />
-                      </label>
-                      <label>
-                        <Button type="button" variant="outline" size="sm" asChild>
-                          <span>
-                            <Image className="w-4 h-4 mr-1" />
-                            Gallery
-                          </span>
-                        </Button>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageSelect}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <MobileCamera
+                onImageSelect={handleImageSelect}
+                onImageRemove={() => {
+                  setSelectedImage(null);
+                  setImagePreview(null);
+                }}
+                imagePreview={imagePreview}
+              />
             </div>
 
             <FormField
