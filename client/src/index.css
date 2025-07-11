@@ -106,3 +106,20 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
+/* Task card border styles for color-coded due dates */
+.task-card-assigned {
+  border-color: hsl(var(--primary)) !important;
+}
+
+.task-card-overdue {
+  border-color: hsl(var(--destructive)) !important;
+}
+
+.task-card-warning {
+  border-color: hsl(var(--accent)) !important;
+}
+
+.task-card-normal {
+  border-color: hsl(var(--secondary)) !important;
+}
