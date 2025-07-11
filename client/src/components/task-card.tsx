@@ -77,6 +77,13 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
           src={task.image || "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300"}
           alt={task.title}
           className="w-full h-40 object-cover"
+          onError={(e) => {
+            // If the uploaded image fails to load, fallback to placeholder
+            const target = e.target as HTMLImageElement;
+            if (target.src !== "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300") {
+              target.src = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300";
+            }
+          }}
         />
         
         {/* Priority/Status Badge */}

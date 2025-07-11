@@ -149,6 +149,14 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                   src={task.image}
                   alt={task.title}
                   className="w-full h-48 object-cover rounded-xl"
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    const target = e.target as HTMLImageElement;
+                    const container = target.parentElement;
+                    if (container) {
+                      container.style.display = 'none';
+                    }
+                  }}
                 />
               </div>
             )}
