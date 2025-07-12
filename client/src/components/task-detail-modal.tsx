@@ -60,7 +60,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
     defaultValues: {
       title: task?.title || "",
       description: task?.description || "",
-      assignedTo: task?.assignedTo?.toString() || "",
+      assignedTo: task?.assignedTo?.toString() || "unassigned",
       dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
       priority: task?.priority || "normal",
       tags: task?.tags || [],
@@ -73,7 +73,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
       form.reset({
         title: task.title,
         description: task.description || "",
-        assignedTo: task.assignedTo?.toString() || "",
+        assignedTo: task.assignedTo?.toString() || "unassigned",
         dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
         priority: task.priority || "normal",
         tags: task.tags || [],
@@ -153,7 +153,10 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
   });
 
   const onSubmitEdit = (data: z.infer<typeof editTaskSchema>) => {
-    editTaskMutation.mutate(data);
+    editTaskMutation.mutate({
+      ...data,
+      assignedTo: data.assignedTo === "unassigned" ? "" : data.assignedTo,
+    });
   };
 
   const completeTaskMutation = useMutation({
@@ -219,7 +222,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
         ) : task ? (
           <>
             <DialogHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pr-8">
                 <DialogTitle className="text-2xl font-bold">{task.title}</DialogTitle>
                 <Button
                   variant="ghost"
@@ -307,7 +310,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">Unassigned</SelectItem>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
                               {users.map((user: any) => (
                                 <SelectItem key={user.id} value={user.id.toString()}>
                                   {user.name}
