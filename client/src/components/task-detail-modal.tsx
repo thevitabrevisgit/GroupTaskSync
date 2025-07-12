@@ -11,11 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { X, Clock, CheckCircle } from "lucide-react";
+import { X, Clock, CheckCircle, Edit2, Save, XCircle } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { getUserColor } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import React from "react";
 
 interface TaskDetailModalProps {
   taskId: number | null;
@@ -28,10 +34,79 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
   const { toast } = useToast();
   const [timeHours, setTimeHours] = useState("");
   const [noteContent, setNoteContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   const { data: task, isLoading } = useQuery({
     queryKey: [`/api/tasks/${taskId}`],
     enabled: !!taskId,
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["/api/users"],
+  });
+
+  // Form schema for editing
+  const editTaskSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().optional(),
+    assignedTo: z.string().optional(),
+    dueDate: z.string().optional(),
+    priority: z.enum(["normal", "high", "urgent"]),
+    tags: z.array(z.string()).optional(),
+  });
+
+  const form = useForm<z.infer<typeof editTaskSchema>>({
+    resolver: zodResolver(editTaskSchema),
+    defaultValues: {
+      title: task?.title || "",
+      description: task?.description || "",
+      assignedTo: task?.assignedTo?.toString() || "",
+      dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
+      priority: task?.priority || "normal",
+      tags: task?.tags || [],
+    },
+  });
+
+  // Reset form when task changes
+  React.useEffect(() => {
+    if (task) {
+      form.reset({
+        title: task.title,
+        description: task.description || "",
+        assignedTo: task.assignedTo?.toString() || "",
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
+        priority: task.priority || "normal",
+        tags: task.tags || [],
+      });
+    }
+  }, [task, form]);
+
+  const editTaskMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof editTaskSchema>) => {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: data.title,
+          description: data.description,
+          assignedTo: data.assignedTo ? parseInt(data.assignedTo) : null,
+          dueDate: data.dueDate || null,
+          priority: data.priority,
+          tags: data.tags || [],
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to update task");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/tasks/${taskId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      setIsEditing(false);
+      toast({ title: "Task updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update task", variant: "destructive" });
+    },
   });
 
   const addTimeMutation = useMutation({
@@ -76,6 +151,10 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
       toast({ title: "Note saved successfully" });
     },
   });
+
+  const onSubmitEdit = (data: z.infer<typeof editTaskSchema>) => {
+    editTaskMutation.mutate(data);
+  };
 
   const completeTaskMutation = useMutation({
     mutationFn: async () => {
@@ -140,7 +219,27 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
         ) : task ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">{task.title}</DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-2xl font-bold">{task.title}</DialogTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="ml-2"
+                >
+                  {isEditing ? (
+                    <>
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Edit
+                    </>
+                  )}
+                </Button>
+              </div>
             </DialogHeader>
 
             {/* Task Image */}
@@ -164,49 +263,162 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
 
             {/* Task Info */}
             <div className="space-y-4">
-              <p className="text-gray-600">{task.description}</p>
-              
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <div className="flex items-center gap-2">
-                  <span>Assigned to:</span>
-                  {task.assignee ? (
-                    <div className="flex items-center gap-2">
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getUserColor(task.assignee.username).bg} ${getUserColor(task.assignee.username).text}`}>
-                        {task.assignee.name.charAt(0)}
-                      </div>
-                      <span className="font-medium">{task.assignee.name}</span>
+              {isEditing ? (
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmitEdit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="assignedTo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Assigned To</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select assignee" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">Unassigned</SelectItem>
+                              {users.map((user: any) => (
+                                <SelectItem key={user.id} value={user.id.toString()}>
+                                  {user.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Due Date</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Priority</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="normal">Normal</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="urgent">Urgent</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={editTaskMutation.isPending}>
+                        <Save className="w-4 h-4 mr-2" />
+                        {editTaskMutation.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsEditing(false)}
+                      >
+                        Cancel
+                      </Button>
                     </div>
-                  ) : (
-                    <span className="font-medium">Unassigned</span>
-                  )}
-                </div>
-                {task.dueDate && (
-                  <span>
-                    Due:{" "}
-                    <span className="font-medium">
-                      {new Date(task.dueDate + 'T00:00:00-06:00').toLocaleDateString('en-US', { 
-                        timeZone: 'America/Chicago',
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })} (CST)
-                    </span>
-                  </span>
-                )}
-              </div>
+                  </form>
+                </Form>
+              ) : (
+                <>
+                  <p className="text-gray-600">{task.description}</p>
+                  
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <span>Assigned to:</span>
+                      {task.assignee ? (
+                        <div className="flex items-center gap-2">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${getUserColor(task.assignee.username).bg} ${getUserColor(task.assignee.username).text}`}>
+                            {task.assignee.name.charAt(0)}
+                          </div>
+                          <span className="font-medium">{task.assignee.name}</span>
+                        </div>
+                      ) : (
+                        <span className="font-medium">Unassigned</span>
+                      )}
+                    </div>
+                    {task.dueDate && (
+                      <span>
+                        Due:{" "}
+                        <span className="font-medium">
+                          {new Date(task.dueDate + 'T00:00:00-06:00').toLocaleDateString('en-US', { 
+                            timeZone: 'America/Chicago',
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })} (CST)
+                        </span>
+                      </span>
+                    )}
+                  </div>
 
-              <div className="flex flex-wrap gap-2">
-                {task.tags?.map((tag: string) => (
-                  <Badge key={tag} className={getTagColor(tag)}>
-                    {tag}
-                  </Badge>
-                ))}
-                {task.priority !== "normal" && (
-                  <Badge variant="destructive">
-                    {task.priority.toUpperCase()} PRIORITY
-                  </Badge>
-                )}
-              </div>
+                  <div className="flex flex-wrap gap-2">
+                    {task.tags?.map((tag: string) => (
+                      <Badge key={tag} className={getTagColor(tag)}>
+                        {tag}
+                      </Badge>
+                    ))}
+                    {task.priority !== "normal" && (
+                      <Badge variant="destructive">
+                        {task.priority.toUpperCase()} PRIORITY
+                      </Badge>
+                    )}
+                  </div>
+                </>
+              )}
 
               <Separator />
 

@@ -152,6 +152,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const updateData = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate + 'T00:00:00-06:00') : null,
+      };
+      
+      const task = await storage.updateTask(taskId, updateData);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
   app.patch("/api/tasks/:id/complete", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
