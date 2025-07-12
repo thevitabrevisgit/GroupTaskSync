@@ -87,15 +87,24 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
           }}
         />
         
-        {/* Priority/Status Badge */}
-        <div className="absolute top-2 right-2">
-          {task.assignedTo === currentUserId ? (
+        {/* Assigned To You Badge - Upper Left */}
+        {task.assignedTo === currentUserId && (
+          <div className="absolute top-2 left-2">
             <Badge className="bg-primary text-primary-foreground text-xs">
               ASSIGNED TO YOU
             </Badge>
-          ) : task.priority === "high" || task.priority === "urgent" ? (
+          </div>
+        )}
+
+        {/* Priority/Status Badge - Upper Right */}
+        <div className="absolute top-2 right-2">
+          {task.priority === "high" ? (
             <Badge className="bg-destructive text-destructive-foreground text-xs">
               HIGH PRIORITY
+            </Badge>
+          ) : task.priority === "urgent" ? (
+            <Badge className="bg-destructive text-destructive-foreground text-xs">
+              URGENT PRIORITY
             </Badge>
           ) : overdueText && daysOverdue > 0 ? (
             <Badge className={`text-xs ${daysOverdue > 7 ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'}`}>

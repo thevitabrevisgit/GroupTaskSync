@@ -19,13 +19,9 @@ export default function ProfileSelection() {
   });
 
   const handleProfileSelect = (userId: number, isAdmin: boolean) => {
-    if (isAdmin) {
-      setSelectedUserId(userId);
-      setShowPinModal(true);
-    } else {
-      setCurrentUser(userId);
-      setLocation("/feed");
-    }
+    // No PIN required - everyone has same access
+    setCurrentUser(userId);
+    setLocation("/feed");
   };
 
   const handleAdminVerified = () => {
@@ -67,7 +63,7 @@ export default function ProfileSelection() {
                 </div>
                 <h3 className="text-white font-semibold text-lg">{user.name}</h3>
                 <p className={`text-sm font-medium ${user.isAdmin ? 'text-accent' : 'text-gray-400'}`}>
-                  {user.isAdmin ? 'Admin' : 'Member'}
+                  {user.isAdmin ? 'Parent' : 'Member'}
                 </p>
                 {user.isAdmin && (
                   <Crown className="text-accent absolute top-2 right-2 w-5 h-5" />
@@ -109,11 +105,7 @@ export default function ProfileSelection() {
         )}
       </div>
 
-      <AdminPinModal
-        open={showPinModal}
-        onClose={() => setShowPinModal(false)}
-        onVerified={handleAdminVerified}
-      />
+      {/* Admin PIN Modal no longer needed since everyone has same access */}
     </div>
   );
 }
