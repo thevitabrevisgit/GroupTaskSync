@@ -6,16 +6,42 @@ import { insertUserSchema, insertTaskSchema, insertTimeEntrySchema, insertTaskNo
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { OneDriveStorageManager, OneDriveConfig } from "./onedrive-storage";
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (fallback for development)
 const uploadsDir = path.join(process.cwd(), "server", "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Multer configuration for file uploads
+// Initialize OneDrive storage manager
+let oneDriveManager: OneDriveStorageManager | null = null;
+
+// Check for OneDrive configuration
+if (process.env.ONEDRIVE_CLIENT_ID && process.env.ONEDRIVE_CLIENT_SECRET) {
+  const oneDriveConfig: OneDriveConfig = {
+    clientId: process.env.ONEDRIVE_CLIENT_ID,
+    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
+    tenantId: process.env.ONEDRIVE_TENANT_ID || 'common',
+    accounts: [
+      { name: 'Account 1', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_1 || '', userId: 'user1' },
+      { name: 'Account 2', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_2 || '', userId: 'user2' },
+      { name: 'Account 3', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_3 || '', userId: 'user3' },
+      { name: 'Account 4', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_4 || '', userId: 'user4' },
+      { name: 'Account 5', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_5 || '', userId: 'user5' },
+      { name: 'Account 6', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_6 || '', userId: 'user6' },
+    ].filter(account => account.refreshToken) // Only include accounts with tokens
+  };
+  
+  if (oneDriveConfig.accounts.length > 0) {
+    oneDriveManager = new OneDriveStorageManager(oneDriveConfig);
+    console.log(`📸 OneDrive storage initialized with ${oneDriveConfig.accounts.length} accounts`);
+  }
+}
+
+// Multer configuration for file uploads (memory storage for OneDrive upload)
 const upload = multer({
-  storage: multer.diskStorage({
+  storage: oneDriveManager ? multer.memoryStorage() : multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, uploadsDir);
     },
@@ -25,7 +51,7 @@ const upload = multer({
     },
   }),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit for OneDrive
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif|webp/;
@@ -133,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filename: (req as any).file?.filename,
         originalname: (req as any).file?.originalname,
         size: (req as any).file?.size,
-        environment: process.env.NODE_ENV
+        oneDriveEnabled: !!oneDriveManager
       });
 
       const taskData = {
@@ -145,19 +171,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       if ((req as any).file) {
-        const imagePath = `/uploads/${(req as any).file.filename}`;
-        taskData.image = imagePath;
-        console.log("📸 WARNING: File uploaded to development environment. Files may not persist across restarts.");
-        console.log("📸 Image path saved to database:", imagePath);
+        if (oneDriveManager) {
+          // Upload to OneDrive
+          try {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const filename = uniqueSuffix + path.extname((req as any).file.originalname);
+            
+            const result = await oneDriveManager.uploadImage(
+              (req as any).file.buffer,
+              filename,
+              (req as any).file.mimetype
+            );
+            
+            taskData.image = result.url;
+            console.log(`📸 Image uploaded to OneDrive (${result.accountUsed}):`, result.url);
+          } catch (oneDriveError) {
+            console.error("📸 OneDrive upload failed, falling back to local storage:", oneDriveError);
+            // Fallback to local storage
+            const imagePath = `/uploads/${(req as any).file.filename}`;
+            taskData.image = imagePath;
+          }
+        } else {
+          // Local storage fallback for memory storage
+          const fs = require('fs');
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+          const filename = uniqueSuffix + path.extname((req as any).file.originalname);
+          const filepath = path.join(uploadsDir, filename);
+          fs.writeFileSync(filepath, (req as any).file.buffer);
+          
+          // Local storage fallback
+          const imagePath = `/uploads/${filename}`;
+          taskData.image = imagePath;
+          console.log("📸 Using local storage (OneDrive not configured):", imagePath);
+        }
       }
 
       const validatedData = insertTaskSchema.parse(taskData);
       const task = await storage.createTask(validatedData);
       
-      res.json({
-        ...task,
-        _imageWarning: (req as any).file ? "Image uploaded to development environment - may not persist" : undefined
-      });
+      res.json(task);
     } catch (error) {
       console.error("📸 Upload error:", error);
       if (error instanceof Error) {
@@ -270,6 +322,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Helper function to sort tasks by priority algorithm
+  // OneDrive storage info route  
+  app.get("/api/onedrive/status", async (req, res) => {
+    try {
+      if (!oneDriveManager) {
+        return res.json({
+          enabled: false,
+          message: "OneDrive storage not configured",
+          setup: "Add ONEDRIVE_CLIENT_ID, ONEDRIVE_CLIENT_SECRET, and ONEDRIVE_REFRESH_TOKEN_1-6 environment variables"
+        });
+      }
+      
+      const storageInfo = await oneDriveManager.getStorageInfo();
+      res.json({
+        enabled: true,
+        accounts: storageInfo,
+        totalAccounts: storageInfo.length
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        enabled: false,
+        error: error instanceof Error ? error.message : "Failed to get OneDrive status" 
+      });
+    }
+  });
+
+  return server;
+}
+
 function sortTasksByPriority(tasks: any[], currentUserId?: number) {
   return tasks
     .filter(task => !task.isCompleted) // Don't show completed tasks by default
