@@ -128,6 +128,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", upload.single('image'), async (req, res) => {
     try {
+      console.log("📸 Image upload debug:", {
+        hasFile: !!(req as any).file,
+        filename: (req as any).file?.filename,
+        originalname: (req as any).file?.originalname,
+        size: (req as any).file?.size,
+        environment: process.env.NODE_ENV
+      });
+
       const taskData = {
         ...req.body,
         tags: req.body.tags ? JSON.parse(req.body.tags) : [],
@@ -136,14 +144,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dueDate: req.body.dueDate ? new Date(req.body.dueDate + 'T00:00:00-06:00') : null,
       };
 
-      if (req.file) {
-        taskData.image = `/uploads/${req.file.filename}`;
+      if ((req as any).file) {
+        const imagePath = `/uploads/${(req as any).file.filename}`;
+        taskData.image = imagePath;
+        console.log("📸 WARNING: File uploaded to development environment. Files may not persist across restarts.");
+        console.log("📸 Image path saved to database:", imagePath);
       }
 
       const validatedData = insertTaskSchema.parse(taskData);
       const task = await storage.createTask(validatedData);
-      res.json(task);
+      
+      res.json({
+        ...task,
+        _imageWarning: (req as any).file ? "Image uploaded to development environment - may not persist" : undefined
+      });
     } catch (error) {
+      console.error("📸 Upload error:", error);
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       } else {

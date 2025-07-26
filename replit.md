@@ -27,6 +27,22 @@ Preferred communication style: Simple, everyday language.
 ✓ Removed admin-only restrictions - everyone can now create tasks
 ✓ Fixed date timezone issues - dates now save and display correctly in CST
 ✓ Added consistent color coding for user avatars throughout the app
+✓ Added task editing functionality with comprehensive form fields
+✓ Implemented PUT API endpoint for task updates
+✓ Fixed badge positioning and SelectItem empty string errors
+
+## Known Issues
+
+### Image Upload Persistence
+- **Issue**: Uploaded images are stored in `/server/uploads/` directory but disappear after server restarts
+- **Root Cause**: Replit development environment doesn't persist uploaded files across workflow restarts
+- **Current Workaround**: Fallback system shows placeholder images when uploads fail to load
+- **Database Evidence**: Task "This is a test chore" shows image path `/uploads/1753569369352-74291377.jpg` but file no longer exists
+- **Investigation**: Added comprehensive logging to track file upload, storage, and disappearance patterns
+- **Solution Options**: 
+  1. Use external image storage service (Cloudinary, AWS S3)
+  2. Store images as base64 in database (not recommended for large images)
+  3. Accept limitation in development environment
 
 ## System Architecture
 

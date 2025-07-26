@@ -66,5 +66,19 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Check upload directory status on startup
+    const fs = require('fs');
+    const uploadsDir = 'server/uploads';
+    const files = fs.readdirSync(uploadsDir);
+    console.log(`📸 Server startup - uploads directory contains: ${files.length} files`, files);
+    
+    // Set up periodic file monitoring
+    setInterval(() => {
+      const currentFiles = fs.readdirSync(uploadsDir);
+      if (currentFiles.length > 1) { // More than just .gitkeep
+        console.log(`📸 File check - ${currentFiles.length} files in uploads:`, currentFiles);
+      }
+    }, 60000); // Check every minute
   });
 })();

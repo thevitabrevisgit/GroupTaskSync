@@ -79,10 +79,16 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
           alt={task.title}
           className="w-full h-40 object-cover"
           onError={(e) => {
+            console.log(`📸 Image failed to load: ${task.image} for task: ${task.title}`);
             // If the uploaded image fails to load, fallback to placeholder
             const target = e.target as HTMLImageElement;
             if (target.src !== "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300") {
               target.src = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300";
+            }
+          }}
+          onLoad={() => {
+            if (task.image && task.image.startsWith('/uploads/')) {
+              console.log(`📸 Uploaded image loaded successfully: ${task.image} for task: ${task.title}`);
             }
           }}
         />
