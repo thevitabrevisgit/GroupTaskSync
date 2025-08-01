@@ -11,15 +11,16 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
   const getDaysOverdue = () => {
     if (!task.dueDate) return 0;
     
-    // Get current time in CST
+    // Get current date in Central time zone
     const now = new Date();
-    const cstOffset = -6; // CST is UTC-6
-    const nowCST = new Date(now.getTime() + (cstOffset * 60 * 60 * 1000));
+    const centralTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Chicago"}));
+    const todayCST = new Date(centralTime.getFullYear(), centralTime.getMonth(), centralTime.getDate());
     
-    // Parse due date as CST
-    const dueDate = new Date(task.dueDate + 'T00:00:00-06:00'); // Force CST interpretation
+    // Parse the due date from database (already in CST)
+    const dueDate = new Date(task.dueDate);
+    const dueDateCST = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
     
-    const diffTime = nowCST.getTime() - dueDate.getTime();
+    const diffTime = todayCST.getTime() - dueDateCST.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
@@ -40,17 +41,25 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
       return `${daysOverdue} days overdue`;
     }
     if (task.dueDate) {
-      // Get current time in CST
+      // Get current date in Central time zone
       const now = new Date();
-      const cstOffset = -6; // CST is UTC-6
-      const nowCST = new Date(now.getTime() + (cstOffset * 60 * 60 * 1000));
+      const centralTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Chicago"}));
+      const todayCST = new Date(centralTime.getFullYear(), centralTime.getMonth(), centralTime.getDate());
       
-      // Parse due date as CST
-      const dueDate = new Date(task.dueDate + 'T00:00:00-06:00'); // Force CST interpretation
+      // Parse the due date from database
+      const dueDate = new Date(task.dueDate);
+      const dueDateCST = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
       
-      const diffTime = dueDate.getTime() - nowCST.getTime();
+      const diffTime = dueDateCST.getTime() - todayCST.getTime();
       const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return `Due in ${daysLeft} days`;
+      
+      if (daysLeft === 0) {
+        return "Due Today";
+      } else if (daysLeft === 1) {
+        return "Due Tomorrow";
+      } else {
+        return `Due in ${daysLeft} days`;
+      }
     }
     return null;
   };
