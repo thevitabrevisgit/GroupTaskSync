@@ -30,19 +30,29 @@ Preferred communication style: Simple, everyday language.
 ✓ Added task editing functionality with comprehensive form fields
 ✓ Implemented PUT API endpoint for task updates
 ✓ Fixed badge positioning and SelectItem empty string errors
+✓ Implemented OneDrive storage integration for permanent image storage
+✓ Added automatic fallback from OneDrive to local storage
+✓ Created comprehensive OneDrive setup guide (ONEDRIVE_SETUP.md)
 
-## Known Issues
+## OneDrive Storage Integration
 
-### Image Upload Persistence
-- **Issue**: Uploaded images are stored in `/server/uploads/` directory but disappear after server restarts
-- **Root Cause**: Replit development environment doesn't persist uploaded files across workflow restarts
-- **Current Workaround**: Fallback system shows placeholder images when uploads fail to load
-- **Database Evidence**: Task "This is a test chore" shows image path `/uploads/1753569369352-74291377.jpg` but file no longer exists
-- **Investigation**: Added comprehensive logging to track file upload, storage, and disappearance patterns
-- **Solution Options**: 
-  1. Use external image storage service (Cloudinary, AWS S3)
-  2. Store images as base64 in database (not recommended for large images)
-  3. Accept limitation in development environment
+### Current Status: ACTIVE
+- **OneDrive Manager**: ✅ Initialized with 1 account
+- **Storage Distribution**: Round-robin across available OneDrive accounts
+- **Fallback System**: Automatic fallback to local storage if OneDrive fails
+- **API Endpoint**: `/api/onedrive/status` for storage monitoring
+
+### Image Upload Flow
+1. **Primary**: Upload to OneDrive → Create sharing link → Store direct URL in database
+2. **Fallback**: If OneDrive fails → Store locally (development environment)
+3. **Display**: Images load from OneDrive URLs or local fallback
+
+### Setup Complete
+- ✅ Azure app registration configured
+- ✅ OneDrive API permissions granted  
+- ✅ Primary OneDrive account connected
+- ✅ Automatic image uploading to cloud storage
+- ✅ Persistent image storage across server restarts
 
 ## System Architecture
 

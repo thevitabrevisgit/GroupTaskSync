@@ -312,10 +312,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
-}
-
   // OneDrive storage info route  
   app.get("/api/onedrive/status", async (req, res) => {
     try {
@@ -341,7 +337,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  return server;
+  const httpServer = createServer(app);
+  return httpServer;
 }
 
 // Helper function to sort tasks by priority algorithm
