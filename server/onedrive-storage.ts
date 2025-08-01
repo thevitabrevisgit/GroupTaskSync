@@ -76,26 +76,19 @@ export class OneDriveStorageManager {
         }
       });
 
-      // Create sharing link
-      const shareUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${uploadResponse.data.id}/createLink`;
-      const shareResponse = await axios.post(shareUrl, {
-        type: 'view',
-        scope: 'anonymous'
-      }, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Convert OneDrive share link to direct image URL
-      const directUrl = this.convertToDirectUrl(shareResponse.data.link.webUrl);
+      // Store the item ID and account info for proxy access
+      const itemId = uploadResponse.data.id;
+      const proxyUrl = `/api/onedrive/image/${accountIndex}/${itemId}`;
 
       console.log(`📸 Image uploaded to OneDrive account: ${account.name}`);
+      console.log(`📸 Item ID: ${itemId}`);
+      console.log(`📸 Proxy URL: ${proxyUrl}`);
       
       return {
-        url: directUrl,
-        accountUsed: account.name
+        url: proxyUrl,
+        accountUsed: account.name,
+        itemId: itemId,
+        accountIndex: accountIndex
       };
     } catch (error) {
       console.error(`Upload failed for account ${account.name}:`, error);
@@ -139,16 +132,18 @@ export class OneDriveStorageManager {
     }
   }
 
-  private convertToDirectUrl(shareUrl: string): string {
-    // Convert OneDrive sharing URL to direct image URL
-    // Extract the share ID and create a direct link
-    try {
-      const shareId = btoa(shareUrl).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
-      return `https://api.onedrive.com/v1.0/shares/u!${shareId}/root/content`;
-    } catch (error) {
-      console.error('Failed to convert share URL:', error);
-      return shareUrl; // Fallback to original URL
-    }
+  async downloadImage(accountIndex: number, itemId: string): Promise<Buffer> {
+    const accessToken = await this.getAccessToken(accountIndex);
+    const downloadUrl = `https://graph.microsoft.com/v1.0/me/drive/items/${itemId}/content`;
+    
+    const response = await axios.get(downloadUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      },
+      responseType: 'arraybuffer'
+    });
+    
+    return Buffer.from(response.data);
   }
 
   async getStorageInfo(): Promise<Array<{ account: string, used: string, total: string }>> {

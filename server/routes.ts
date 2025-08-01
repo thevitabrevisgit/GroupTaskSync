@@ -337,6 +337,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OneDrive image proxy route
+  app.get("/api/onedrive/image/:accountIndex/:itemId", async (req, res) => {
+    try {
+      if (!oneDriveManager) {
+        return res.status(404).send("OneDrive not configured");
+      }
+
+      const accountIndex = parseInt(req.params.accountIndex);
+      const itemId = req.params.itemId;
+      
+      const imageBuffer = await oneDriveManager.downloadImage(accountIndex, itemId);
+      
+      res.set({
+        'Content-Type': 'image/jpeg', // Default to JPEG, could be enhanced to detect type
+        'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+      });
+      
+      res.send(imageBuffer);
+    } catch (error) {
+      console.error("Failed to serve OneDrive image:", error);
+      res.status(404).send("Image not found");
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -82,13 +82,15 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
             console.log(`📸 Image failed to load: ${task.image} for task: ${task.title}`);
             // If the uploaded image fails to load, fallback to placeholder
             const target = e.target as HTMLImageElement;
-            if (target.src !== "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300") {
-              target.src = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300";
+            const fallbackUrl = "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300";
+            if (target.src !== fallbackUrl) {
+              console.log(`📸 Falling back to placeholder for task: ${task.title}`);
+              target.src = fallbackUrl;
             }
           }}
           onLoad={() => {
-            if (task.image && task.image.startsWith('/uploads/')) {
-              console.log(`📸 Uploaded image loaded successfully: ${task.image} for task: ${task.title}`);
+            if (task.image && (task.image.startsWith('/uploads/') || task.image.includes('onedrive') || task.image.includes('sharepoint'))) {
+              console.log(`📸 Image loaded successfully: ${task.image} for task: ${task.title}`);
             }
           }}
         />
