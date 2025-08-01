@@ -141,9 +141,14 @@ export class OneDriveStorageManager {
 
   private convertToDirectUrl(shareUrl: string): string {
     // Convert OneDrive sharing URL to direct image URL
-    // Format: https://1drv.ms/i/s!... -> https://api.onedrive.com/v1.0/shares/...
-    const encoded = shareUrl.split('/').pop();
-    return `https://api.onedrive.com/v1.0/shares/u!${btoa(shareUrl).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')}/root/content`;
+    // Extract the share ID and create a direct link
+    try {
+      const shareId = btoa(shareUrl).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+      return `https://api.onedrive.com/v1.0/shares/u!${shareId}/root/content`;
+    } catch (error) {
+      console.error('Failed to convert share URL:', error);
+      return shareUrl; // Fallback to original URL
+    }
   }
 
   async getStorageInfo(): Promise<Array<{ account: string, used: string, total: string }>> {

@@ -24,12 +24,7 @@ if (process.env.ONEDRIVE_CLIENT_ID && process.env.ONEDRIVE_CLIENT_SECRET) {
     clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
     tenantId: process.env.ONEDRIVE_TENANT_ID || 'common',
     accounts: [
-      { name: 'Account 1', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_1 || '', userId: 'user1' },
-      { name: 'Account 2', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_2 || '', userId: 'user2' },
-      { name: 'Account 3', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_3 || '', userId: 'user3' },
-      { name: 'Account 4', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_4 || '', userId: 'user4' },
-      { name: 'Account 5', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_5 || '', userId: 'user5' },
-      { name: 'Account 6', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_6 || '', userId: 'user6' },
+      { name: 'Primary Account', refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN_1 || '', userId: 'user1' },
     ].filter(account => account.refreshToken) // Only include accounts with tokens
   };
   
@@ -321,7 +316,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return httpServer;
 }
 
-// Helper function to sort tasks by priority algorithm
   // OneDrive storage info route  
   app.get("/api/onedrive/status", async (req, res) => {
     try {
@@ -329,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({
           enabled: false,
           message: "OneDrive storage not configured",
-          setup: "Add ONEDRIVE_CLIENT_ID, ONEDRIVE_CLIENT_SECRET, and ONEDRIVE_REFRESH_TOKEN_1-6 environment variables"
+          setup: "Add ONEDRIVE_CLIENT_ID, ONEDRIVE_CLIENT_SECRET, and ONEDRIVE_REFRESH_TOKEN_1 environment variables"
         });
       }
       
@@ -349,6 +343,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return server;
 }
+
+// Helper function to sort tasks by priority algorithm
 
 function sortTasksByPriority(tasks: any[], currentUserId?: number) {
   return tasks
