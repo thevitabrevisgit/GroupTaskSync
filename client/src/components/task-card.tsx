@@ -104,35 +104,38 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
           }}
         />
         
-        {/* Assigned To You Badge - Upper Left */}
+        {/* Assigned To You Badge - Below Priority */}
         {task.assignedTo === currentUserId && (
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-10 left-2 z-10">
             <Badge className="bg-primary text-primary-foreground text-xs">
               ASSIGNED TO YOU
             </Badge>
           </div>
         )}
 
-        {/* Priority/Status Badge - Upper Right */}
-        <div className="absolute top-2 right-2">
-          {task.priority === "high" ? (
-            <Badge className="bg-destructive text-destructive-foreground text-xs">
-              HIGH PRIORITY
+        {/* Priority Badge - Upper Left */}
+        {task.priority && task.priority !== 'normal' && (
+          <div className="absolute top-2 left-2 z-10">
+            <Badge 
+              variant={task.priority === 'urgent' ? "destructive" : "default"}
+              className="text-xs font-semibold"
+            >
+              {task.priority === 'urgent' ? 'URGENT' : 'HIGH'}
             </Badge>
-          ) : task.priority === "urgent" ? (
-            <Badge className="bg-destructive text-destructive-foreground text-xs">
-              URGENT PRIORITY
-            </Badge>
-          ) : overdueText && daysOverdue > 0 ? (
-            <Badge className={`text-xs ${daysOverdue > 7 ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'}`}>
+          </div>
+        )}
+        
+        {/* Due Date Badge - Upper Right */}
+        {overdueText && (
+          <div className="absolute top-2 right-2 z-10">
+            <Badge 
+              variant={daysOverdue > 0 ? "destructive" : "secondary"}
+              className="text-xs font-semibold"
+            >
               {overdueText}
             </Badge>
-          ) : overdueText ? (
-            <Badge className="bg-secondary text-secondary-foreground text-xs">
-              {overdueText}
-            </Badge>
-          ) : null}
-        </div>
+          </div>
+        )}
         
         {/* Avatar Badge */}
         {task.assignee && (
