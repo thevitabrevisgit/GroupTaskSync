@@ -33,6 +33,9 @@ Preferred communication style: Simple, everyday language.
 ✓ Implemented OneDrive storage integration for permanent image storage
 ✓ Added automatic fallback from OneDrive to local storage
 ✓ Created comprehensive OneDrive setup guide (ONEDRIVE_SETUP.md)
+✓ Fixed timezone awareness for Central US - tasks now show "Due Today" correctly
+✓ Added "Unassigned" filter button to show tasks with no assigned user
+✓ Improved mobile layout with two-row filter buttons and reduced button height
 
 ## OneDrive Storage Integration
 

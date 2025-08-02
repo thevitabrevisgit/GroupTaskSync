@@ -105,14 +105,30 @@ export default function TaskFeed() {
       </header>
 
       {/* Filter Section */}
-      <div className="bg-gray-800 border-b border-gray-700 px-4 py-4">
-        <div className="flex space-x-2 overflow-x-auto">
-          {FILTER_OPTIONS.map((option) => (
+      <div className="bg-gray-800 border-b border-gray-700 px-4 py-3">
+        {/* Primary filters row */}
+        <div className="flex space-x-2 overflow-x-auto mb-2">
+          {FILTER_OPTIONS.slice(0, 3).map((option) => (
             <Button
               key={option.value}
               variant={activeFilter === option.value ? "default" : "secondary"}
               size="sm"
-              className="whitespace-nowrap"
+              className="whitespace-nowrap h-8 px-3 py-1"
+              onClick={() => setActiveFilter(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+        
+        {/* Tag filters row */}
+        <div className="flex space-x-2 overflow-x-auto">
+          {FILTER_OPTIONS.slice(3).map((option) => (
+            <Button
+              key={option.value}
+              variant={activeFilter === option.value ? "default" : "secondary"}
+              size="sm"
+              className="whitespace-nowrap h-8 px-3 py-1"
               onClick={() => setActiveFilter(option.value)}
             >
               {option.label}
