@@ -121,6 +121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tasks = await storage.getTasksByUser(parseInt(userId as string));
       } else if (filter === "unassigned") {
         tasks = await storage.getUnassignedTasks();
+      } else if (filter === "priority") {
+        tasks = await storage.getPriorityTasks();
       } else if (filter && ["indoor", "outdoor", "chores", "projects"].includes(filter as string)) {
         tasks = await storage.getTasksByTag(filter as string);
       } else {

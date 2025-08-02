@@ -12,6 +12,7 @@ const FILTER_OPTIONS = [
   { value: "all", label: "All Tasks" },
   { value: "assigned", label: "My Tasks" },
   { value: "unassigned", label: "Unassigned" },
+  { value: "priority", label: "Priority" },
   { value: "indoor", label: "Indoor" },
   { value: "outdoor", label: "Outdoor" },
   { value: "chores", label: "Chores" },
@@ -108,7 +109,7 @@ export default function TaskFeed() {
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-3">
         {/* Primary filters row */}
         <div className="flex space-x-2 overflow-x-auto mb-2">
-          {FILTER_OPTIONS.slice(0, 3).map((option) => (
+          {FILTER_OPTIONS.slice(0, 4).map((option) => (
             <Button
               key={option.value}
               variant={activeFilter === option.value ? "default" : "secondary"}
@@ -123,7 +124,7 @@ export default function TaskFeed() {
         
         {/* Tag filters row */}
         <div className="flex space-x-2 overflow-x-auto">
-          {FILTER_OPTIONS.slice(3).map((option) => (
+          {FILTER_OPTIONS.slice(4).map((option) => (
             <Button
               key={option.value}
               variant={activeFilter === option.value ? "default" : "secondary"}
@@ -160,6 +161,8 @@ export default function TaskFeed() {
                 ? "You don't have any assigned tasks yet."
                 : activeFilter === "unassigned"
                 ? "No unassigned tasks found."
+                : activeFilter === "priority"
+                ? "No priority tasks found."
                 : "No tasks match the current filter."}
             </p>
             {currentUser.isAdmin && (

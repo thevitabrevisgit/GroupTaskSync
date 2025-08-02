@@ -15,6 +15,7 @@ export interface IStorage {
   getAllTasks(): Promise<TaskWithRelations[]>;
   getTasksByUser(userId: number): Promise<TaskWithRelations[]>;
   getUnassignedTasks(): Promise<TaskWithRelations[]>;
+  getPriorityTasks(): Promise<TaskWithRelations[]>;
   getTasksByTag(tag: string): Promise<TaskWithRelations[]>;
   getTasksByFilter(filter: string, userId?: number): Promise<TaskWithRelations[]>;
   createTask(task: InsertTask): Promise<Task>;
@@ -169,6 +170,41 @@ export class DatabaseStorage implements IStorage {
       .from(tasks)
       .leftJoin(users, eq(tasks.assignedTo, users.id))
       .where(isNull(tasks.assignedTo))
+      .orderBy(desc(tasks.createdAt));
+
+    const tasksWithAssignees = await Promise.all(
+      result.map(async (row) => {
+        const task = row.tasks;
+        const assignee = row.users;
+
+        const [creator] = await db.select().from(users).where(eq(users.id, task.createdBy));
+        const completedByUser = task.completedBy 
+          ? (await db.select().from(users).where(eq(users.id, task.completedBy)))[0]
+          : undefined;
+
+        const taskTimeEntries = await this.getTimeEntriesForTask(task.id);
+        const taskNotes = await this.getNotesForTask(task.id);
+
+        return {
+          ...task,
+          assignee: assignee || undefined,
+          creator,
+          completedByUser,
+          timeEntries: taskTimeEntries,
+          notes: taskNotes,
+        };
+      })
+    );
+
+    return tasksWithAssignees;
+  }
+
+  async getPriorityTasks(): Promise<TaskWithRelations[]> {
+    const result = await db
+      .select()
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(or(eq(tasks.priority, 'high'), eq(tasks.priority, 'urgent')))
       .orderBy(desc(tasks.createdAt));
 
     const tasksWithAssignees = await Promise.all(
