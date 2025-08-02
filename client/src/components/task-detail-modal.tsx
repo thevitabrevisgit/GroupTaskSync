@@ -397,12 +397,22 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                       <span>
                         Due:{" "}
                         <span className="font-medium">
-                          {new Date(task.dueDate + 'T00:00:00-06:00').toLocaleDateString('en-US', { 
-                            timeZone: 'America/Chicago',
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })} (CST)
+                          {(() => {
+                            try {
+                              const dueDate = new Date(task.dueDate);
+                              if (isNaN(dueDate.getTime())) {
+                                return 'No due date set';
+                              }
+                              return dueDate.toLocaleDateString('en-US', { 
+                                timeZone: 'America/Chicago',
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric'
+                              }) + ' (CST)';
+                            } catch (error) {
+                              return 'No due date set';
+                            }
+                          })()}
                         </span>
                       </span>
                     )}
