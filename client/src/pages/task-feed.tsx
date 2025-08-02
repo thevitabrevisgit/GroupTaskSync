@@ -8,11 +8,15 @@ import AddTaskModal from "@/components/add-task-modal";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useLocation } from "wouter";
 
-const FILTER_OPTIONS = [
+const PRIMARY_FILTERS = [
   { value: "all", label: "All Tasks" },
   { value: "assigned", label: "My Tasks" },
   { value: "unassigned", label: "Unassigned" },
   { value: "priority", label: "Priority" },
+];
+
+const SECONDARY_FILTERS = [
+  { value: "all", label: "All Tags" },
   { value: "indoor", label: "Indoor" },
   { value: "outdoor", label: "Outdoor" },
   { value: "chores", label: "Chores" },
@@ -22,7 +26,8 @@ const FILTER_OPTIONS = [
 export default function TaskFeed() {
   const [, setLocation] = useLocation();
   const { currentUser, currentUserId } = useCurrentUser();
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [primaryFilter, setPrimaryFilter] = useState("all");
+  const [secondaryFilter, setSecondaryFilter] = useState("all");
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -39,11 +44,14 @@ export default function TaskFeed() {
   }, [currentUser, currentUserId, setLocation]);
 
   const { data: tasks = [], isLoading, refetch } = useQuery({
-    queryKey: ["/api/tasks", activeFilter, currentUserId],
+    queryKey: ["/api/tasks", primaryFilter, secondaryFilter, currentUserId],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (activeFilter !== "all") {
-        params.set("filter", activeFilter);
+      if (primaryFilter !== "all") {
+        params.set("filter", primaryFilter);
+      }
+      if (secondaryFilter !== "all") {
+        params.set("tagFilter", secondaryFilter);
       }
       if (currentUserId) {
         params.set("userId", currentUserId.toString());
@@ -109,28 +117,28 @@ export default function TaskFeed() {
       <div className="bg-gray-800 border-b border-gray-700 px-4 py-3">
         {/* Primary filters row */}
         <div className="flex space-x-2 overflow-x-auto mb-2">
-          {FILTER_OPTIONS.slice(0, 4).map((option) => (
+          {PRIMARY_FILTERS.map((option) => (
             <Button
               key={option.value}
-              variant={activeFilter === option.value ? "default" : "secondary"}
+              variant={primaryFilter === option.value ? "default" : "secondary"}
               size="sm"
               className="whitespace-nowrap h-8 px-3 py-1"
-              onClick={() => setActiveFilter(option.value)}
+              onClick={() => setPrimaryFilter(option.value)}
             >
               {option.label}
             </Button>
           ))}
         </div>
         
-        {/* Tag filters row */}
+        {/* Secondary filters row */}
         <div className="flex space-x-2 overflow-x-auto">
-          {FILTER_OPTIONS.slice(4).map((option) => (
+          {SECONDARY_FILTERS.map((option) => (
             <Button
               key={option.value}
-              variant={activeFilter === option.value ? "default" : "secondary"}
+              variant={secondaryFilter === option.value ? "default" : "secondary"}
               size="sm"
               className="whitespace-nowrap h-8 px-3 py-1"
-              onClick={() => setActiveFilter(option.value)}
+              onClick={() => setSecondaryFilter(option.value)}
             >
               {option.label}
             </Button>
@@ -157,13 +165,13 @@ export default function TaskFeed() {
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-4">No tasks found</div>
             <p className="text-gray-400 mb-6">
-              {activeFilter === "assigned" 
+              {primaryFilter === "assigned" 
                 ? "You don't have any assigned tasks yet."
-                : activeFilter === "unassigned"
+                : primaryFilter === "unassigned"
                 ? "No unassigned tasks found."
-                : activeFilter === "priority"
+                : primaryFilter === "priority"
                 ? "No priority tasks found."
-                : "No tasks match the current filter."}
+                : "No tasks match the current filters."}
             </p>
             {currentUser.isAdmin && (
               <Button onClick={() => setShowAddTask(true)}>

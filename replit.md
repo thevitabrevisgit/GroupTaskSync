@@ -36,6 +36,9 @@ Preferred communication style: Simple, everyday language.
 ✓ Fixed timezone awareness for Central US - tasks now show "Due Today" correctly
 ✓ Added "Unassigned" filter button to show tasks with no assigned user
 ✓ Improved mobile layout with two-row filter buttons and reduced button height
+✓ Implemented cascading filter system - primary filters (row 1) + secondary tag filters (row 2)
+✓ Fixed task detail modal date display issue and improved mobile button layout
+✓ Reorganized task card badges - priority (upper left), due dates (upper right)
 
 ## OneDrive Storage Integration
 

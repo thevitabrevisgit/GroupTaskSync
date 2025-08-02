@@ -114,19 +114,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Task routes
   app.get("/api/tasks", async (req, res) => {
     try {
-      const { filter, userId } = req.query;
+      const { filter, tagFilter, userId } = req.query;
       let tasks;
 
+      // Apply primary filter first
       if (filter === "assigned" && userId) {
         tasks = await storage.getTasksByUser(parseInt(userId as string));
       } else if (filter === "unassigned") {
         tasks = await storage.getUnassignedTasks();
       } else if (filter === "priority") {
         tasks = await storage.getPriorityTasks();
-      } else if (filter && ["indoor", "outdoor", "chores", "projects"].includes(filter as string)) {
-        tasks = await storage.getTasksByTag(filter as string);
       } else {
         tasks = await storage.getAllTasks();
+      }
+
+      // Apply secondary tag filter if specified
+      if (tagFilter && tagFilter !== "all" && ["indoor", "outdoor", "chores", "projects"].includes(tagFilter as string)) {
+        tasks = tasks.filter(task => task.tags && task.tags.includes(tagFilter as string));
       }
 
       // Sort tasks by priority algorithm
