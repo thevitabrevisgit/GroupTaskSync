@@ -117,11 +117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { filter, userId } = req.query;
       let tasks;
 
-      if (filter && filter !== "all") {
-        tasks = await storage.getTasksByFilter(
-          filter as string,
-          userId ? parseInt(userId as string) : undefined
-        );
+      if (filter === "assigned" && userId) {
+        tasks = await storage.getTasksByUser(parseInt(userId as string));
+      } else if (filter === "unassigned") {
+        tasks = await storage.getUnassignedTasks();
+      } else if (filter && ["indoor", "outdoor", "chores", "projects"].includes(filter as string)) {
+        tasks = await storage.getTasksByTag(filter as string);
       } else {
         tasks = await storage.getAllTasks();
       }

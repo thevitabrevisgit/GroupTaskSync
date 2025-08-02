@@ -11,6 +11,7 @@ import { useLocation } from "wouter";
 const FILTER_OPTIONS = [
   { value: "all", label: "All Tasks" },
   { value: "assigned", label: "My Tasks" },
+  { value: "unassigned", label: "Unassigned" },
   { value: "indoor", label: "Indoor" },
   { value: "outdoor", label: "Outdoor" },
   { value: "chores", label: "Chores" },
@@ -141,6 +142,8 @@ export default function TaskFeed() {
             <p className="text-gray-400 mb-6">
               {activeFilter === "assigned" 
                 ? "You don't have any assigned tasks yet."
+                : activeFilter === "unassigned"
+                ? "No unassigned tasks found."
                 : "No tasks match the current filter."}
             </p>
             {currentUser.isAdmin && (

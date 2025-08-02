@@ -13,7 +13,9 @@ export interface IStorage {
   // Tasks
   getTask(id: number): Promise<TaskWithRelations | undefined>;
   getAllTasks(): Promise<TaskWithRelations[]>;
-  getTasksForUser(userId: number): Promise<TaskWithRelations[]>;
+  getTasksByUser(userId: number): Promise<TaskWithRelations[]>;
+  getUnassignedTasks(): Promise<TaskWithRelations[]>;
+  getTasksByTag(tag: string): Promise<TaskWithRelations[]>;
   getTasksByFilter(filter: string, userId?: number): Promise<TaskWithRelations[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
@@ -126,12 +128,82 @@ export class DatabaseStorage implements IStorage {
     return tasksWithAssignees;
   }
 
-  async getTasksForUser(userId: number): Promise<TaskWithRelations[]> {
+  async getTasksByUser(userId: number): Promise<TaskWithRelations[]> {
     const result = await db
       .select()
       .from(tasks)
       .leftJoin(users, eq(tasks.assignedTo, users.id))
       .where(eq(tasks.assignedTo, userId))
+      .orderBy(desc(tasks.createdAt));
+
+    const tasksWithAssignees = await Promise.all(
+      result.map(async (row) => {
+        const task = row.tasks;
+        const assignee = row.users;
+
+        const [creator] = await db.select().from(users).where(eq(users.id, task.createdBy));
+        const completedByUser = task.completedBy 
+          ? (await db.select().from(users).where(eq(users.id, task.completedBy)))[0]
+          : undefined;
+
+        const taskTimeEntries = await this.getTimeEntriesForTask(task.id);
+        const taskNotes = await this.getNotesForTask(task.id);
+
+        return {
+          ...task,
+          assignee: assignee || undefined,
+          creator,
+          completedByUser,
+          timeEntries: taskTimeEntries,
+          notes: taskNotes,
+        };
+      })
+    );
+
+    return tasksWithAssignees;
+  }
+
+  async getUnassignedTasks(): Promise<TaskWithRelations[]> {
+    const result = await db
+      .select()
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(isNull(tasks.assignedTo))
+      .orderBy(desc(tasks.createdAt));
+
+    const tasksWithAssignees = await Promise.all(
+      result.map(async (row) => {
+        const task = row.tasks;
+        const assignee = row.users;
+
+        const [creator] = await db.select().from(users).where(eq(users.id, task.createdBy));
+        const completedByUser = task.completedBy 
+          ? (await db.select().from(users).where(eq(users.id, task.completedBy)))[0]
+          : undefined;
+
+        const taskTimeEntries = await this.getTimeEntriesForTask(task.id);
+        const taskNotes = await this.getNotesForTask(task.id);
+
+        return {
+          ...task,
+          assignee: assignee || undefined,
+          creator,
+          completedByUser,
+          timeEntries: taskTimeEntries,
+          notes: taskNotes,
+        };
+      })
+    );
+
+    return tasksWithAssignees;
+  }
+
+  async getTasksByTag(tag: string): Promise<TaskWithRelations[]> {
+    const result = await db
+      .select()
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(sql`${tag} = ANY(${tasks.tags})`)
       .orderBy(desc(tasks.createdAt));
 
     const tasksWithAssignees = await Promise.all(
