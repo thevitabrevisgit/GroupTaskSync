@@ -221,14 +221,14 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
           </div>
         ) : task ? (
           <>
-            <DialogHeader>
-              <div className="flex items-center justify-between gap-3 pr-2">
-                <DialogTitle className="text-lg font-semibold flex-1 min-w-0 pr-2 leading-tight">{task.title}</DialogTitle>
+            <DialogHeader className="pr-12">
+              <div className="flex items-center gap-2">
+                <DialogTitle className="text-lg font-semibold flex-1 min-w-0 leading-tight">{task.title}</DialogTitle>
                 <Button
                   variant="ghost"
-                  size="default"
+                  size="sm"
                   onClick={() => setIsEditing(!isEditing)}
-                  className="shrink-0 px-4 py-2 text-sm"
+                  className="shrink-0 px-3 py-1.5 text-sm h-8"
                 >
                   {isEditing ? (
                     <>
