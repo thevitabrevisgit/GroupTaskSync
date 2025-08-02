@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Plus, User } from "lucide-react";
+import { RefreshCw, Plus, Menu, CheckCircle } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { getUserColor } from "@/lib/utils";
 import TaskCard from "@/components/task-card";
 import TaskDetailModal from "@/components/task-detail-modal";
 import AddTaskModal from "@/components/add-task-modal";
@@ -31,6 +36,9 @@ export default function TaskFeed() {
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
+  const [completedDateRange, setCompletedDateRange] = useState("today");
+  const [completedUserFilter, setCompletedUserFilter] = useState("all");
 
   // Redirect to profile selection if no user is selected, but only after loading
   useEffect(() => {
@@ -74,6 +82,28 @@ export default function TaskFeed() {
     setLocation("/");
   };
 
+  // Query for completed tasks
+  const { data: users = [] } = useQuery({
+    queryKey: ["/api/users"],
+    enabled: showCompletedTasks,
+  });
+
+  const { data: completedTasks = [] } = useQuery({
+    queryKey: ["/api/tasks/completed", completedDateRange, completedUserFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("completed", "true");
+      params.set("dateRange", completedDateRange);
+      if (completedUserFilter !== "all") {
+        params.set("userId", completedUserFilter);
+      }
+      const response = await fetch(`/api/tasks/completed?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch completed tasks');
+      return response.json();
+    },
+    enabled: showCompletedTasks,
+  });
+
   if (!currentUser) {
     return null;
   }
@@ -84,18 +114,39 @@ export default function TaskFeed() {
       <header className="bg-gray-800 shadow-sm border-b border-gray-700 sticky top-0 z-40 safe-area-inset-top">
         <div className="px-4 py-3 pt-safe">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img
-                src={currentUser.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser.name}`}
-                alt="Current user"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-white">TaskShare</h1>
-                <p className="text-sm text-gray-300">{currentUser.name}</p>
-              </div>
+            {/* Left side - Hamburger menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Menu className="w-5 h-5 text-white" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    Access additional features and settings
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-4">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => setShowCompletedTasks(true)}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Completed Tasks
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Center - User name */}
+            <div className="text-center">
+              <p className="text-sm text-gray-300">{currentUser.name}</p>
             </div>
             
+            {/* Right side - User circle and refresh */}
             <div className="flex items-center space-x-3">
               <Button
                 variant="ghost"
@@ -103,10 +154,12 @@ export default function TaskFeed() {
                 onClick={handleRefresh}
                 disabled={isRefreshing}
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
               <Button variant="ghost" size="sm" onClick={handleProfileMenu}>
-                <User className="w-4 h-4" />
+                <div className={`w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold ${getUserColor(currentUser.username).bg} ${getUserColor(currentUser.username).text}`}>
+                  {currentUser.name.charAt(0)}
+                </div>
               </Button>
             </div>
           </div>
@@ -212,6 +265,84 @@ export default function TaskFeed() {
           <Plus className="w-6 h-6" />
         </Button>
       </div>
+
+      {/* Completed Tasks Modal */}
+      <Sheet open={showCompletedTasks} onOpenChange={setShowCompletedTasks}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>Completed Tasks</SheetTitle>
+            <SheetDescription>
+              View tasks that have been completed
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="mt-6 space-y-4">
+            {/* Filters */}
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="date-range">Date Range</Label>
+                <Select value={completedDateRange} onValueChange={setCompletedDateRange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="today">Today</SelectItem>
+                    <SelectItem value="yesterday">Yesterday</SelectItem>
+                    <SelectItem value="week">This Week</SelectItem>
+                    <SelectItem value="month">This Month</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="user-filter">User</Label>
+                <Select value={completedUserFilter} onValueChange={setCompletedUserFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Users</SelectItem>
+                    {users.map((user: any) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Completed Tasks List */}
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {completedTasks.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">
+                  No completed tasks found for the selected filters.
+                </p>
+              ) : (
+                completedTasks.map((task: any) => (
+                  <div key={task.id} className="p-3 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium text-sm">{task.title}</h4>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Completed by {task.completedByUser?.name} on{' '}
+                      {new Date(task.completedAt).toLocaleDateString()}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {task.tags?.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <TaskDetailModal
         taskId={selectedTaskId}

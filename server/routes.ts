@@ -141,6 +141,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/tasks/completed - Get completed tasks with filtering
+  app.get("/api/tasks/completed", async (req, res) => {
+    try {
+      const { dateRange, userId } = req.query;
+      
+      // Calculate date range
+      const now = new Date();
+      let startDate: Date;
+      
+      switch (dateRange) {
+        case "yesterday":
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 1);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "week":
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 7);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "month":
+          startDate = new Date(now);
+          startDate.setMonth(now.getMonth() - 1);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case "today":
+        default:
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+      }
+      
+      const completedTasks = await storage.getCompletedTasks(startDate, userId ? parseInt(userId as string) : undefined);
+      res.json(completedTasks);
+    } catch (error) {
+      console.error("Error fetching completed tasks:", error);
+      res.status(500).json({ message: "Failed to fetch completed tasks" });
+    }
+  });
+
   app.get("/api/tasks/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

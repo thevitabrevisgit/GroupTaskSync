@@ -39,6 +39,11 @@ Preferred communication style: Simple, everyday language.
 ✓ Implemented cascading filter system - primary filters (row 1) + secondary tag filters (row 2)
 ✓ Fixed task detail modal date display issue and improved mobile button layout
 ✓ Reorganized task card badges - priority (upper left), due dates (upper right)
+✓ Replaced person icon with user circle showing first character of username
+✓ Added hamburger menu with "Completed Tasks" option
+✓ Removed site title from header to clean up mobile layout
+✓ Implemented completed tasks modal with date range and user filtering
+✓ Added backend API endpoint for completed tasks with timezone handling
 
 ## OneDrive Storage Integration
 

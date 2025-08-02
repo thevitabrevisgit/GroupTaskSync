@@ -1,6 +1,6 @@
 import { users, tasks, timeEntries, taskNotes, type User, type InsertUser, type Task, type InsertTask, type TimeEntry, type InsertTimeEntry, type TaskNote, type InsertTaskNote, type TaskWithRelations } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, isNull, sql } from "drizzle-orm";
+import { eq, desc, asc, and, or, isNull, sql, gte } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -29,6 +29,9 @@ export interface IStorage {
   // Task notes
   createTaskNote(note: InsertTaskNote): Promise<TaskNote>;
   getNotesForTask(taskId: number): Promise<(TaskNote & { user: User })[]>;
+  
+  // Completed tasks
+  getCompletedTasks(startDate: Date, userId?: number): Promise<TaskWithRelations[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -380,6 +383,50 @@ export class DatabaseStorage implements IStorage {
       ...row.task_notes,
       user: row.users,
     }));
+  }
+
+  async getCompletedTasks(startDate: Date, userId?: number): Promise<TaskWithRelations[]> {
+    let baseWhere = and(
+      eq(tasks.isCompleted, true),
+      gte(tasks.completedAt, startDate)
+    );
+
+    if (userId) {
+      baseWhere = and(baseWhere, eq(tasks.completedBy, userId));
+    }
+
+    const result = await db
+      .select()
+      .from(tasks)
+      .leftJoin(users, eq(tasks.assignedTo, users.id))
+      .where(baseWhere)
+      .orderBy(desc(tasks.completedAt));
+    
+    const tasksWithAssignees = await Promise.all(
+      result.map(async (row) => {
+        const task = row.tasks;
+        const assignee = row.users;
+
+        const [creator] = await db.select().from(users).where(eq(users.id, task.createdBy));
+        const completedByUser = task.completedBy 
+          ? (await db.select().from(users).where(eq(users.id, task.completedBy)))[0]
+          : undefined;
+
+        const taskTimeEntries = await this.getTimeEntriesForTask(task.id);
+        const taskNotes = await this.getNotesForTask(task.id);
+
+        return {
+          ...task,
+          assignee: assignee || undefined,
+          creator,
+          completedByUser,
+          timeEntries: taskTimeEntries,
+          notes: taskNotes,
+        };
+      })
+    );
+
+    return tasksWithAssignees;
   }
 }
 
