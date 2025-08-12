@@ -1,0 +1,444 @@
+# TaskShare Application Recreation Prompts
+# Complete Guide for Building Chores Subsite with OneDrive Integration
+
+## OVERVIEW
+Create a collaborative task management "chores" subsite with Netflix-style profile selection, social media feed layout, OneDrive image storage, and mobile PWA capabilities. Built for 6 team members with timezone-aware task tracking.
+
+## PHASE 1: PROJECT SETUP & ARCHITECTURE
+
+### Initial Setup Prompt
+```
+Create a full-stack collaborative task management application called "Chores" with these requirements:
+
+TECH STACK:
+- Frontend: React with TypeScript, Tailwind CSS, shadcn/ui components
+- Backend: Express.js with TypeScript
+- Database: PostgreSQL with Drizzle ORM
+- File Storage: OneDrive integration with local fallback
+- Routing: Wouter for client-side routing
+- State Management: TanStack React Query
+- Build Tool: Vite
+
+ARCHITECTURE:
+- Follow modern fullstack patterns with frontend-heavy approach
+- Backend only for data persistence and API calls
+- Minimize file count by collapsing similar components
+- Database-first design with Drizzle schema in shared/schema.ts
+
+Create the basic project structure with:
+1. Client directory with React app
+2. Server directory with Express backend
+3. Shared directory for types and schemas
+4. Database configuration with Neon PostgreSQL
+5. Package.json with all required dependencies
+```
+
+### Database Schema Prompt
+```
+Design the database schema in shared/schema.ts with these entities:
+
+USERS TABLE:
+- id (serial primary key)
+- username (text unique)
+- name (text)
+- avatar (text, optional)
+- isAdmin (boolean, default false)
+
+TASKS TABLE:
+- id (serial primary key)
+- title (text)
+- description (text, optional)
+- imageUrl (text, optional)
+- priority (enum: low, medium, high, urgent)
+- tags (text array - indoor, outdoor, chores, projects)
+- assignedTo (foreign key to users, nullable)
+- createdBy (foreign key to users)
+- completedBy (foreign key to users, nullable)
+- isCompleted (boolean, default false)
+- dueDate (timestamp, nullable)
+- createdAt (timestamp, default now)
+- completedAt (timestamp, nullable)
+
+TIME_ENTRIES TABLE:
+- id (serial primary key)
+- taskId (foreign key to tasks)
+- userId (foreign key to users)
+- hours (decimal)
+- description (text, optional)
+- createdAt (timestamp, default now)
+
+TASK_NOTES TABLE:
+- id (serial primary key)
+- taskId (foreign key to tasks)
+- userId (foreign key to users)
+- content (text)
+- createdAt (timestamp, default now)
+
+Include proper relations, insert schemas using createInsertSchema from drizzle-zod, and TypeScript types for all entities.
+```
+
+## PHASE 2: CORE FEATURES IMPLEMENTATION
+
+### Profile Selection System
+```
+Create a Netflix-style profile selection page with these requirements:
+
+TEAM MEMBERS (hardcoded):
+1. Sam - Regular user
+2. Sean - Regular user  
+3. Gabe - Regular user
+4. Evelyn - Regular user
+5. Beth - Admin (requires PIN: 0525)
+6. Tim - Admin (requires PIN: 0525)
+
+FEATURES:
+- Grid layout with user avatars and names
+- Color-coded user circles with first character of name
+- Admin PIN verification modal for Beth and Tim
+- Profile persistence in localStorage and server sessions
+- Smooth transitions and hover effects
+- Mobile-responsive design with touch-friendly buttons
+
+ADMIN PIN LOGIC:
+- Show PIN input modal when admin user selected
+- Validate PIN 0525 before allowing access
+- Error handling for incorrect PIN
+- Session management to remember authenticated admin status
+```
+
+### Task Feed & Filtering System
+```
+Build the main task feed with cascading filter system:
+
+LAYOUT:
+- Header with hamburger menu (left), user name (center), user circle + refresh (right)
+- Two-row filter system:
+  Row 1 (Primary): All Tasks, My Tasks, Unassigned, Priority
+  Row 2 (Secondary): All Tags, Indoor, Outdoor, Chores, Projects
+- Social media style scrollable task cards
+- Floating action button for adding tasks
+
+TASK CARDS:
+- Image at top (from OneDrive or placeholder)
+- Title and description
+- Priority badge (upper left) - color coded by urgency
+- Due date badge (upper right) - "Due Today", "Overdue", relative dates
+- User assignment with color-coded initials
+- Tag pills at bottom
+- Hover/click effects for interaction
+
+FILTERING LOGIC:
+- Cascading filters: Primary filters + secondary tag filters
+- "My Tasks" shows tasks assigned to current user
+- "Unassigned" shows tasks with no assignedTo value
+- "Priority" shows high and urgent priority tasks
+- Tag filters work in combination with primary filters
+- Real-time filtering with loading states
+```
+
+### Task Management Features
+```
+Implement comprehensive task management:
+
+TASK CREATION MODAL:
+- Title and description fields
+- Priority selection (low, medium, high, urgent)
+- Tag selection with multi-select (indoor, outdoor, chores, projects)
+- User assignment dropdown
+- Due date picker with timezone awareness (Central US)
+- Image upload with camera integration for mobile
+- Form validation with error handling
+
+TASK DETAIL MODAL:
+- Full task information display
+- Time tracking with hours input
+- Notes system with user attribution
+- Task completion toggle
+- Edit functionality for all fields
+- Time entries history
+- Notes timeline with timestamps
+
+TASK EDITING:
+- In-place editing of all task fields
+- Priority and status changes
+- Reassignment capabilities
+- Due date modifications
+- Image replacement/removal
+```
+
+## PHASE 3: ADVANCED FEATURES
+
+### Mobile PWA Implementation
+```
+Add Progressive Web App capabilities:
+
+PWA FEATURES:
+- Service worker for offline functionality
+- Web app manifest for installability
+- Native mobile camera integration
+- Touch-optimized interface
+- Safe area support for notched devices
+- Responsive breakpoints for all screen sizes
+
+MOBILE-SPECIFIC FEATURES:
+- Camera capture for task images
+- Touch gestures for navigation
+- Optimized button sizes (minimum 44px touch targets)
+- Mobile-first responsive design
+- Bottom sheet modals on small screens
+- Swipe gestures where appropriate
+```
+
+### OneDrive Storage Integration
+```
+Implement OneDrive cloud storage for images:
+
+ONEDRIVE SETUP REQUIREMENTS:
+1. Azure App Registration
+2. OneDrive API permissions (Files.ReadWrite)
+3. Refresh token generation for family accounts
+4. Environment variables setup
+
+STORAGE IMPLEMENTATION:
+- OneDrive manager class with multiple account support
+- Round-robin distribution across available accounts
+- Automatic fallback to local storage if OneDrive fails
+- Image upload pipeline: local → OneDrive → database URL storage
+- Direct URL serving from OneDrive with sharing links
+- Error handling and retry logic
+
+ENVIRONMENT SECRETS NEEDED:
+- ONEDRIVE_CLIENT_ID
+- ONEDRIVE_CLIENT_SECRET
+- ONEDRIVE_REFRESH_TOKEN_1
+- ONEDRIVE_REFRESH_TOKEN_2 (optional, for additional accounts)
+- ONEDRIVE_REFRESH_TOKEN_3 (optional)
+- ONEDRIVE_REFRESH_TOKEN_4 (optional)
+- ONEDRIVE_REFRESH_TOKEN_5 (optional)
+- ONEDRIVE_REFRESH_TOKEN_6 (optional)
+
+Include comprehensive error handling and status monitoring.
+```
+
+### Timezone Awareness & Priority Algorithm
+```
+Implement Central US timezone handling and smart task sorting:
+
+TIMEZONE FEATURES:
+- All dates stored and displayed in Central Standard Time
+- "Due Today" logic based on Central timezone
+- Overdue detection with timezone consideration
+- Date pickers default to Central timezone
+
+PRIORITY ALGORITHM:
+- Overdue tasks (highest priority)
+- Due today tasks
+- High/Urgent priority tasks
+- Tasks assigned to current user
+- Recently created tasks
+- Sort by combination of factors with weighted scoring
+```
+
+## PHASE 4: UI/UX POLISH
+
+### Completed Tasks Feature
+```
+Add completed tasks tracking and viewing:
+
+HAMBURGER MENU:
+- Slide-out menu from left side
+- "Completed Tasks" option
+- Future expansion ready for additional features
+
+COMPLETED TASKS MODAL:
+- Right-side slide-out panel
+- Date range filters: Today, Yesterday, This Week, This Month
+- User filter dropdown (All Users + individual team members)
+- Completed tasks list with:
+  * Task title and description
+  * Completed by user name and date
+  * Original task tags
+  * Completion timestamp
+
+BACKEND SUPPORT:
+- Completed tasks API endpoint with date filtering
+- Query optimization for completed task retrieval
+- Timezone-aware date range calculations
+```
+
+### Visual Design System
+```
+Implement consistent visual design:
+
+COLOR SYSTEM:
+- Dark theme as primary (gray-800, gray-900 backgrounds)
+- User-specific color coding for avatars and assignments
+- Priority color coding: Red (urgent), Orange (high), Blue (medium), Gray (low)
+- Due date color coding: Red (overdue), Orange (due today), Blue (upcoming)
+
+COMPONENT STYLING:
+- Rounded corners and soft shadows
+- Consistent spacing using Tailwind scale
+- Smooth transitions and hover effects
+- Mobile-safe touch targets
+- Accessibility considerations (contrast, focus states)
+
+LOADING STATES:
+- Skeleton loading for task cards
+- Loading spinners for actions
+- Progressive loading for images
+- Error states with retry options
+```
+
+## PHASE 5: INTEGRATION CONSIDERATIONS
+
+### Subsite Integration
+```
+Prepare for integration into card sense application:
+
+ROUTING STRUCTURE:
+- Mount application at /chores route
+- Self-contained routing within subsite
+- Navigation breadcrumbs back to parent app
+- Shared authentication if needed
+
+STYLING ISOLATION:
+- Scoped CSS to prevent conflicts
+- Consistent design language with parent app
+- Responsive breakpoints alignment
+- Theme variables compatibility
+
+API CONSIDERATIONS:
+- Prefixed API routes (/api/chores/*)
+- Separate database schema if needed
+- Authentication integration points
+- Error handling integration
+```
+
+### Environment Setup Guide
+```
+Provide complete environment configuration:
+
+REQUIRED ENVIRONMENT VARIABLES:
+- DATABASE_URL (PostgreSQL connection)
+- ONEDRIVE_CLIENT_ID (Azure app ID)
+- ONEDRIVE_CLIENT_SECRET (Azure app secret)
+- ONEDRIVE_REFRESH_TOKEN_1 (Primary OneDrive account)
+- NODE_ENV (development/production)
+
+OPTIONAL VARIABLES:
+- ONEDRIVE_REFRESH_TOKEN_2 through ONEDRIVE_REFRESH_TOKEN_6 (Additional accounts)
+
+DATABASE SETUP:
+1. Create PostgreSQL database
+2. Run: npm run db:push (to sync schema)
+3. Verify table creation
+4. Seed initial users if needed
+
+ONEDRIVE SETUP:
+1. Create Azure app registration
+2. Configure OneDrive API permissions
+3. Generate refresh tokens for family accounts
+4. Test file upload functionality
+5. Verify sharing link generation
+```
+
+## PHASE 6: TESTING & DEPLOYMENT
+
+### Testing Strategy
+```
+Implement comprehensive testing:
+
+FUNCTIONALITY TESTING:
+- Profile selection and admin PIN
+- Task CRUD operations
+- File upload to OneDrive
+- Filter combinations
+- Mobile responsive behavior
+- Offline functionality (PWA)
+
+PERFORMANCE TESTING:
+- Image loading optimization
+- Database query efficiency
+- Mobile performance
+- OneDrive API rate limiting
+- Large dataset handling
+
+CROSS-PLATFORM TESTING:
+- Desktop browsers (Chrome, Firefox, Safari, Edge)
+- Mobile devices (iOS Safari, Android Chrome)
+- Tablet layouts
+- Different screen orientations
+```
+
+### Deployment Checklist
+```
+Final deployment preparation:
+
+CODE QUALITY:
+- TypeScript compilation without errors
+- ESLint/Prettier formatting
+- Remove console.log statements
+- Optimize bundle size
+
+SECURITY:
+- Environment variables secured
+- API endpoints protected
+- File upload validation
+- XSS prevention
+
+PERFORMANCE:
+- Image optimization
+- Database indexing
+- Caching strategies
+- CDN for static assets
+
+MONITORING:
+- Error logging
+- Performance metrics
+- OneDrive usage tracking
+- Database performance monitoring
+```
+
+## COMPLETE FEATURE CHECKLIST
+
+✅ Netflix-style profile selection with 6 team members
+✅ Admin PIN verification (0525) for Beth and Tim
+✅ Cascading two-tier filter system (primary + secondary)
+✅ Social media style task feed with image cards
+✅ Priority algorithm with timezone awareness (Central US)
+✅ Mobile PWA with camera integration
+✅ OneDrive cloud storage for images with fallback
+✅ Time tracking and notes system
+✅ Task completion and history
+✅ Hamburger menu with completed tasks modal
+✅ User circle with first character display
+✅ Color-coded priority and due date badges
+✅ Responsive design for all screen sizes
+✅ Dark theme UI with consistent styling
+✅ PostgreSQL database with Drizzle ORM
+✅ Express.js REST API
+✅ File upload with OneDrive integration
+✅ Session management and persistence
+✅ Error handling and loading states
+
+## SECRET REQUIREMENTS FOR REPLICATION
+
+The application requires these secrets to be configured in the target environment:
+
+ESSENTIAL SECRETS:
+- DATABASE_URL: PostgreSQL connection string
+- ONEDRIVE_CLIENT_ID: Azure application ID
+- ONEDRIVE_CLIENT_SECRET: Azure application secret
+- ONEDRIVE_REFRESH_TOKEN_1: Primary OneDrive account refresh token
+
+OPTIONAL SECRETS (for additional storage):
+- ONEDRIVE_REFRESH_TOKEN_2 through ONEDRIVE_REFRESH_TOKEN_6
+
+To obtain OneDrive credentials:
+1. Create Azure app registration at portal.azure.com
+2. Configure OneDrive API permissions (Files.ReadWrite)
+3. Generate refresh tokens using OAuth flow
+4. Test with sample file upload
+
+This comprehensive guide should enable complete recreation of the TaskShare chores application with all current features and functionality.
