@@ -51,7 +51,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
     description: z.string().optional(),
     assignedTo: z.string().optional(),
     dueDate: z.string().optional(),
-    priority: z.enum(["normal", "high", "urgent"]),
+    priority: z.enum(["low", "normal", "high", "urgent"]),
     tags: z.array(z.string()).optional(),
   });
 
@@ -350,6 +350,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
                               <SelectItem value="normal">Normal</SelectItem>
                               <SelectItem value="high">High</SelectItem>
                               <SelectItem value="urgent">Urgent</SelectItem>
@@ -424,7 +425,7 @@ export default function TaskDetailModal({ taskId, open, onClose }: TaskDetailMod
                         {tag}
                       </Badge>
                     ))}
-                    {task.priority !== "normal" && (
+                    {task.priority !== "normal" && task.priority !== "low" && (
                       <Badge variant="destructive">
                         {task.priority.toUpperCase()} PRIORITY
                       </Badge>

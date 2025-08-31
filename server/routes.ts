@@ -427,9 +427,9 @@ function sortTasksByPriority(tasks: any[], currentUserId?: number) {
       }
 
       // 2. High priority tasks
-      const priorityOrder = { urgent: 3, high: 2, normal: 1 };
-      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 1;
-      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 1;
+      const priorityOrder = { urgent: 3, high: 2, normal: 1, low: 0 };
+      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 0;
+      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 0;
       if (aPriority !== bPriority) return bPriority - aPriority;
 
       // 3. Overdue tasks (mix them in)

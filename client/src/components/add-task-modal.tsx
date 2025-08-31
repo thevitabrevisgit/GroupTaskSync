@@ -39,7 +39,7 @@ const createTaskSchema = z.object({
   description: z.string().min(1, "Description is required"),
   assignedTo: z.string().optional(),
   dueDate: z.string().optional(),
-  priority: z.enum(["normal", "high", "urgent"]).default("normal"),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
   tags: z.array(z.string()).default([]),
 });
 
@@ -299,6 +299,7 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="normal">Normal</SelectItem>
                       <SelectItem value="high">High Priority</SelectItem>
                       <SelectItem value="urgent">Urgent</SelectItem>

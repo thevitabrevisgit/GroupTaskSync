@@ -114,13 +114,13 @@ export default function TaskCard({ task, currentUserId, onClick }: TaskCardProps
         )}
 
         {/* Priority Badge - Upper Left */}
-        {task.priority && task.priority !== 'normal' && (
+        {task.priority && !['normal', 'low'].includes(task.priority) && (
           <div className="absolute top-2 left-2 z-10">
-            <Badge 
+            <Badge
               variant={task.priority === 'urgent' ? "destructive" : "default"}
               className="text-xs font-semibold"
             >
-              {task.priority === 'urgent' ? 'URGENT' : 'HIGH'}
+              {task.priority.toUpperCase()}
             </Badge>
           </div>
         )}
